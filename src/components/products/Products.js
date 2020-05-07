@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import Categorybar from "../categorybar/Categorybar";
 import {Link} from "react-router-dom";
+import {connect} from 'react-redux'
+import {addToCart, setProducts} from "../actions/cartActions";
 
 class Products extends Component {
     constructor(props) {
@@ -17,7 +19,11 @@ class Products extends Component {
     fetchAllProducts() {
         fetch('http://localhost:9000/product')
             .then(response => response.json())
-            .then(data => this.setState({products: data}));
+            .then(data => {
+                    this.setState({products: data});
+                    this.props.setProducts(data);
+                }
+            );
     }
 
     fetchProductsWithCategoryId(id) {
@@ -26,11 +32,18 @@ class Products extends Component {
             .then(data => this.setState({products: data}));
     }
 
-    changeCategory(id) {
-        console.log(id);
-        (id < 0) ? this.fetchAllProducts() : this.fetchProductsWithCategoryId(id);
+    filterListByCategoryId(id) {
+        const products = this.props.items.filter(p => p.category === id);
+        this.setState({products: products})
     }
 
+    changeCategory(id) {
+        (id < 0) ? this.fetchAllProducts() : this.filterListByCategoryId(id);
+    }
+
+    handleClick = (id) => {
+        this.props.addToCart(id);
+    };
 
     render() {
         let items = this.state.products.map(item => {
@@ -38,10 +51,13 @@ class Products extends Component {
                 <div className="card" key={item.id}>
                     <div className="card-image">
                         <Link to={"/product/" + item.id}>
-                            <img src={item.imageUrl} alt={item.name}/>
+                            <img src={item.imageUrl} alt={item.name} className="responsive-img" />
                         </Link>
-                        <span className="btn-floating halfway-fab waves-effect waves-light red"><i
-                            className="material-icons">add</i></span>
+                        <span className="btn-floating halfway-fab waves-effect waves-light red" onClick={() => {
+                            this.handleClick(item.id)
+                        }}>
+                            <i className="material-icons">add</i>
+                        </span>
                     </div>
 
                     <div className="card-content">
@@ -67,4 +83,21 @@ class Products extends Component {
     }
 }
 
-export default Products
+const mapStateToProps = (state) => {
+    return {
+        items: state.items
+    }
+};
+const mapDispatchToProps = (dispatch) => {
+
+    return {
+        addToCart: (id) => {
+            dispatch(addToCart(id,1))
+        },
+        setProducts: (products) => {
+            dispatch(setProducts(products))
+        }
+    }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Products)

@@ -41,3 +41,7 @@ img.resize {
     width: 408px;
     height: 408px;
 }
+
+.line_through{
+    text-decoration: line-through;
+}

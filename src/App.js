@@ -4,6 +4,7 @@ import Navbar from './components/navbar/Navbar'
 import './App.css';
 import Products from "./components/products/Products";
 import Product from "./components/product/Product";
+import Cart from "./components/cart/Cart"
 
 class App extends Component {
     render() {
@@ -11,10 +12,10 @@ class App extends Component {
             <BrowserRouter>
                 <div className="App">
                     <Navbar/>
-
                     <Switch>
                         <Route exact path="/" component={Products}/>
                         <Route path="/product/:id" component={Product}/>
+                        <Route path="/cart" component={Cart}/>
                     </Switch>
                 </div>
             </BrowserRouter>

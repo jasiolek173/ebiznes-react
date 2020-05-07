@@ -1,7 +1,9 @@
 import React, {Component} from 'react';
 import Comment from "../comment/Comment";
+import {addToCart} from "../actions/cartActions";
+import {connect} from 'react-redux'
 
-export default class Product extends Component {
+class Product extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -23,8 +25,8 @@ export default class Product extends Component {
         this.setState({count: newCount})
     }
 
-    addToCart(event) {
-        console.log("Asdasd")
+    addToCart() {
+        this.props.addToCart(Number(this.state.productId), this.state.count);
     }
 
     render() {
@@ -48,8 +50,8 @@ export default class Product extends Component {
                                         <input type="text" pattern="[0-9]*"
                                                onChange={this.handleChange.bind(this)} value={this.state.count}/>
                                     </label>
-                                    <button className="btn waves-effect waves-light" type="submit" name="action">Dodaj
-                                        do koszyka
+                                    <button className="btn waves-effect waves-light" name="action"
+                                       onClick={() => {this.addToCart()}}> Dodaj do koszyka
                                         <i className="material-icons right">send</i>
                                     </button>
                                 </form>
@@ -62,3 +64,14 @@ export default class Product extends Component {
         );
     }
 }
+
+const mapDispatchToProps = (dispatch) => {
+
+    return {
+        addToCart: (id, quantity) => {
+            dispatch(addToCart(id, quantity))
+        }
+    }
+};
+
+export default connect(null,mapDispatchToProps)(Product)

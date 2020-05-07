@@ -41,7 +41,7 @@ export default class Comment extends Component {
     render() {
         let comments = this.state.comments.map(comment => {
             return (<li className="collection-item" key={comment.id}>
-                <div>{comment.content}<a className="secondary-content">{comment.owner}</a>
+                <div>{comment.content}<span className="secondary-content">{comment.owner}</span>
                 </div>
             </li>)
         });
