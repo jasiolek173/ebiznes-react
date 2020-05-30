@@ -44,17 +44,14 @@ class Product extends Component {
                             <div>Kategoria: {product.category}</div>
                             <div>{product.description}</div>
                             <div>
-                                <form onSubmit={this.addToCart}>
                                     <label>
                                         Ilość:
                                         <input type="text" pattern="[0-9]*"
                                                onChange={this.handleChange.bind(this)} value={this.state.count}/>
                                     </label>
-                                    <button className="btn waves-effect waves-light" name="action"
-                                       onClick={() => {this.addToCart()}}> Dodaj do koszyka
+                                    <button className="btn waves-effect waves-light" onClick={this.addToCart.bind(this)}> Dodaj do koszyka
                                         <i className="material-icons right">send</i>
                                     </button>
-                                </form>
                             </div>
                         </div>
                     </div>

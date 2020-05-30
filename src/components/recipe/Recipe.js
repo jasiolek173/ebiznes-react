@@ -1,6 +1,7 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux'
 import M from 'materialize-css';
+import Cookies from "js-cookie";
 
 //import { addShipping } from './actions/cartActions'
 class Recipe extends Component {
@@ -51,7 +52,7 @@ class Recipe extends Component {
         this.setState({coupon: e.currentTarget.value})
     };
 
-    handleCoupon = (e) => {
+    handleCoupon = () => {
         fetch('http://localhost:9000/coupon/' + this.state.coupon)
             .then(respone => respone.json())
             .then(data => {
@@ -70,45 +71,56 @@ class Recipe extends Component {
     };
 
     handleOrder() {
-        const ship = this.state.shipment;
-        const pay = this.state.payment;
-        const coupon = this.state.couponId;
-        if (this.props.addedItems.length < 1) {
-            M.toast({html: 'Dodaj coś do koszyka'})
-        } else if (pay == null) {
-            M.toast({html: 'Wybierz formę zapłaty'})
-        } else if (ship == null) {
-            M.toast({html: 'Wybierz sposób dostawy'})
-        }
+        const isLogged = Cookies.get("csrfToken");
+        if (!isLogged) {
+            M.toast({html: 'Przed zakupem proszę się zalogować'})
+        } else {
+            const ship = this.state.shipment;
+            const pay = this.state.payment;
+            const coupon = this.state.couponId;
+            if (this.props.addedItems.length < 1) {
+                M.toast({html: 'Dodaj coś do koszyka'})
+            } else if (pay == null) {
+                M.toast({html: 'Wybierz formę zapłaty'})
+            } else if (ship == null) {
+                M.toast({html: 'Wybierz sposób dostawy'})
+            } else {
 
-        const requestOptions = {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                account: Number(3),
-                shipmentType: Number(ship),
-                paymentType: Number(pay),
-                coupon: Number(coupon)
-            })
-        };
-
-        fetch('http://localhost:9000/order', requestOptions)
-            .then(response => response.json())
-            .then(data => {
-                const id = data.id;
-                const items = this.props.addedItems.map(x => {
-                    return {order: Number(id), product: Number(x.id), quantity: Number(x.quantity)}
-                });
-                const r = {
+                const headers = new Headers();
+                headers.append('Content-Type', 'application/json');
+                headers.append("Csrf-Token", Cookies.get("csrfToken"));
+                const requestOptions = {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(items)
+                    headers: headers,
+                    body: JSON.stringify({
+                        shipmentType: Number(ship),
+                        paymentType: Number(pay),
+                        coupon: Number(coupon)
+                    })
                 };
-                fetch('http://localhost:9000/order_item', r)
+                const request = new Request('http://localhost:9000/order', requestOptions);
+                fetch(request, {credentials: "include"})
                     .then(response => response.json())
-                    .then(_ =>
-                        M.toast({html: 'Zamówienie zostało zapisane '}))
-            });
+                    .then(data => {
+                        const id = data.id;
+                        const items = this.props.addedItems.map(x => {
+                            return {order: Number(id), product: Number(x.id), quantity: Number(x.quantity)}
+                        });
+                        const r = {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(items)
+                        };
+                        const req = new Request('http://localhost:9000/order_item', r);
+                        fetch(req, {credentials: "include"})
+                            .then(_ => {
+                                    M.toast({html: 'Zamówienie zostało zapisane '});
+                                    this.props.clear();
+                                }
+                            )
+                    });
+            }
+        }
     }
 
     render() {
@@ -132,7 +144,8 @@ class Recipe extends Component {
         const total = this.props.total + this.state.shipmentPrice;
         const totalDiscount = this.props.total * this.state.orderPercentage + this.state.shipmentPrice;
         const t = (total === totalDiscount) ? <li className="collection-item"><b>Total: {total} PLN</b></li> :
-            <li className="collection-item"><b>Suma:</b><b className="line_through"> {total} PLN</b><b>  {totalDiscount} PLN</b></li>;
+            <li className="collection-item"><b>Suma:</b><b
+                className="line_through"> {total} PLN</b><b>  {totalDiscount} PLN</b></li>;
         return (
             <div className="container">
                 <div>
@@ -172,6 +185,9 @@ const mapDispatchToProps = (dispatch) => {
         },
         substractShipping: () => {
             dispatch({type: 'SUB_SHIPPING'})
+        },
+        clear: () => {
+            dispatch({type: 'CLEAR_ALL'})
         }
     }
 };

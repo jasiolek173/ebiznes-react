@@ -3,6 +3,7 @@ import Categorybar from "../categorybar/Categorybar";
 import {Link} from "react-router-dom";
 import {connect} from 'react-redux'
 import {addToCart, setProducts} from "../actions/cartActions";
+import Cookies from 'js-cookie';
 
 class Products extends Component {
     constructor(props) {
@@ -17,7 +18,14 @@ class Products extends Component {
     }
 
     fetchAllProducts() {
-        fetch('http://localhost:9000/product')
+        const headers=new Headers();
+        headers.append("Csrf-Token",Cookies.get("csrfToken"));
+        const options = {
+            method: "GET",
+            headers
+        };
+        const request = new Request("http://localhost:9000/product", options);
+        fetch(request)
             .then(response => response.json())
             .then(data => {
                     this.setState({products: data});

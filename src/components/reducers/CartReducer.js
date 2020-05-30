@@ -3,7 +3,7 @@ import {
     REMOVE_ITEM,
     SUB_QUANTITY,
     ADD_QUANTITY,
-    SET_ALL_PRODUCTS_LIST
+    SET_ALL_PRODUCTS_LIST, CLEAR_ALL
 } from '../actions/action-types/cart-actions'
 
 
@@ -24,19 +24,17 @@ const cartReducer = (state = initState, action) => {
     //INSIDE HOME COMPONENT
     if (action.type === ADD_TO_CART) {
         let addedItem = state.items.find(item => item.id === action.id);
-        //check if the action id exists in the addedItems
         let existed_item = state.addedItems.find(item => action.id === item.id);
         if (existed_item) {
-            console.log(action.quantity);
-            addedItem.quantity += action.quantity;
+            existed_item.quantity += action.quantity;
             return {
                 ...state,
-                total: state.total + action.quantity*addedItem.price
+                total: state.total + action.quantity * addedItem.price
             }
         } else {
             addedItem.quantity = action.quantity;
             //calculating the total
-            let newTotal = state.total + action.quantity*addedItem.price;
+            let newTotal = state.total + action.quantity * addedItem.price;
 
             return {
                 ...state,
@@ -89,9 +87,15 @@ const cartReducer = (state = initState, action) => {
             }
         }
 
-    } else {
-        return state
     }
+    if (action.type === CLEAR_ALL) {
+        return {
+            ...state,
+            addedItems: [],
+            total: 0
+        }
+    }
+    return state
 
 };
 
